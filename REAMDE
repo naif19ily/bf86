@@ -1,0 +1,14 @@
+
+                   __
+                  / _)
+         _.----._/ /    dc0x13
+        /         /     part of `bf864` project.
+     __/ (  | (  |      Mar 10 2025
+    /__.-'|_|--|_|
+   
+    Brainfuck interpreter (the fastest ever know (by me)) wirtten in x86_64
+    for the seek of learning and having fun.
+
+    $ bf [file-to-be-interpreted]
+
+    That's it ;)
