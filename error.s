@@ -6,7 +6,7 @@
 # /__.-'|_|--|_|
 
 .section .rodata
-        .usage_msg:             .string "\tusage: puta [file]\n"
+        .usage_msg:     .string "\tusage: puta [file]\n"
         .usage_len:             .long 20
         
         .file_issue_msg:        .string "\terror: file issue...\n"
