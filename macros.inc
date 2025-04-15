@@ -26,6 +26,12 @@
     leaq    MEMORY(%rip), %rax
     addq    %rbx, %rax
     movq    %rax, %r8
+	movq	-8(%rbp), %rax
+	movq	%rax, (%r8)
+	movq	-16(%rbp), %rax
+	movq	%rax, 8(%r8)
+	movq	-24(%rbp), %rax
+	movq	%rax, 16(%r8)
 .endm
 
 .macro  GET_TOKEN_ADDR_2_UPD__R8
@@ -38,3 +44,5 @@
     addq    %rbx, %rax
     movq    %rax, %r8
 .endm
+
+

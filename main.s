@@ -12,7 +12,7 @@ _start:
 	popq	%r8
 	pushq	%rbp
 	movq	%rsp, %rbp
-	subq	$40, %rsp
+	subq	$44, %rsp
 	#
 	# Stack distribution:
 	#
@@ -21,12 +21,14 @@ _start:
 	# -24(%rbp): Offset line..............
 	# -32(%rbp): No tokens stored.........
 	# -36(%rbp): Last token type stored...
+	# -44(%rbp): No loops opened..........
 	#
 	movq	%r8, -8(%rbp)
 	movq	$1, -16(%rbp)
 	movq	$0, -24(%rbp)
-	movq	$1, -32(%rbp)
+	movq	$0, -32(%rbp)
 	movl	$0, -36(%rbp)
+	movq	$0, -44(%rbp)
 
 .mainloop:
 	movq	-8(%rbp), %rax
@@ -67,21 +69,53 @@ _start:
 	je	.incresefmlsz
 	CHECK_4_SPACE
 	GET_TOKEN_ADDR_2_SET__R8
-	# At this point the current token is stored into r8
-	# and the program is rady to set the token info
-	movq	-8(%rbp), %rax
-	movq	%rax, (%r8)
-	movq	-16(%rbp), %rax
-	movq	%rax, 8(%r8)
-	movq	-24(%rbp), %rax
-	movq	%rax, 16(%r8)
 	movl	$1, 24(%r8)
 	movl	%edi, -36(%rbp)
 	incq	-32(%rbp)
 	jmp	.continue
 
 .open_token:
+	movq	-44(%rbp), %rax
+	cmpq	LPSTACK_SIZE(%rip), %rax
+	je	.maxnestedloops
+	CHECK_4_SPACE
+	GET_TOKEN_ADDR_2_SET__R8
+	movq	-32(%rbp), %rax
+	movl	%eax, 24(%r8)
+	movq	-44(%rbp), %rax
+	movq	$8, %rbx
+	mulq	%rbx
+	movq	%rax, %rbx
+	leaq	LPSTACK(%rip), %rax
+	addq	%rbx, %rax
+	movq	%r8, (%rax)
+	incq	-44(%rbp)
+	incq	-32(%rbp)
+	movl	%edi, -36(%rbp)
+	# TODO: Make sure this works
+	jmp	.continue
+
 .close_token:
+	cmpq	$0, -44(%rbp)
+	je	.brksunbalanced
+	CHECK_4_SPACE
+	GET_TOKEN_ADDR_2_SET__R8
+	movq	-44(%rbp), %rax
+	decq	%rax
+	movq	$8, %rbx
+	mulq	%rbx
+	movq	%rax, %rbx
+	leaq	LPSTACK(%rip), %rax
+	addq	%rbx, %rax
+	movq	(%rax), %r9
+	movl	24(%r9), %eax
+	movl	%eax, 24(%r8)
+	movq	-32(%rbp), %rax
+	movl	%eax, 24(%r9)
+	decq	-44(%rbp)
+	incq	-32(%rbp)
+	movl	%edi, -36(%rbp)
+	jmp	.continue
 
 .incresefmlsz:
 	GET_TOKEN_ADDR_2_UPD__R8
@@ -91,7 +125,10 @@ _start:
 	incq	-8(%rbp)
 	jmp	.mainloop
 .c_fini:
-	EXIT	$0
+	GET_TOKEN_ADDR_2_UPD__R8
+	movl	24(%r8), %eax
+	cltq
+	EXIT	24(%r8)
 
 #  ________________________________
 # < error hamdling system (system) >
@@ -104,6 +141,16 @@ _start:
 
 .ranoutoftokens:
 	PRINT	RANOUTTAT_MSG(%rip), RANOUTTAT_LEN(%rip), $2
+	# TODO: call printf from here
+	EXIT	$1
+
+.maxnestedloops:
+	PRINT	MAXNESTEDLPS_MSG(%rip), MAXNESTEDLPS_LEN(%rip), $2
+	# TODO: call printf from here
+	EXIT	$0
+
+.brksunbalanced:
+	PRINT	UNBALANCED_MSG(%rip), UNBALANCED_LEN(%rip), $2
 	# TODO: call printf from here
 	EXIT	$0
 
