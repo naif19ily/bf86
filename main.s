@@ -76,16 +76,16 @@ _start:
 	movq	-24(%rbp), %rax
 	movq	%rax, 16(%r8)
 	movl	$1, 24(%r8)
-	# Sets this character as the last token kind found
 	movl	%edi, -36(%rbp)
+	incq	-32(%rbp)
 	jmp	.continue
 
 .open_token:
 .close_token:
 
 .incresefmlsz:
-	EXIT	$-1
-
+	GET_TOKEN_ADDR_2_UPD__R8
+	incl	24(%r8)
 .continue:
 	incq	-20(%rbp)
 	incq	-8(%rbp)

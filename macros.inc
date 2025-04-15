@@ -27,3 +27,14 @@
     addq    %rbx, %rax
     movq    %rax, %r8
 .endm
+
+.macro  GET_TOKEN_ADDR_2_UPD__R8
+    movq    -32(%rbp), %rax
+    decq    %rax
+    movq    TOKEN_SIZE(%rip), %rbx
+    mulq    %rbx
+    movq    %rax, %rbx
+    leaq    MEMORY(%rip), %rax
+    addq    %rbx, %rax
+    movq    %rax, %r8
+.endm
