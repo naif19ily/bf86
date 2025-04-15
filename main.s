@@ -12,19 +12,105 @@ _start:
 	popq	%r8
 	pushq	%rbp
 	movq	%rsp, %rbp
-	subq	$8, %rsp
+	subq	$40, %rsp
+	#
+	# Stack distribution:
+	#
+	# -8(%rbp):  Source code..............
+	# -16(%rbp): Number line..............
+	# -24(%rbp): Offset line..............
+	# -32(%rbp): No tokens stored.........
+	# -36(%rbp): Last token type stored...
+	#
 	movq	%r8, -8(%rbp)
+	movq	$1, -16(%rbp)
+	movq	$0, -24(%rbp)
+	movq	$1, -32(%rbp)
+	movl	$0, -36(%rbp)
+
 .mainloop:
-	movzbl	-8(%rbp), %eax
-	cmpb	$0, %al
+	movq	-8(%rbp), %rax
+	movzbl	(%rax), %edi
+	cmpb	$0, %dil
 	je	.c_fini
+	cmpb	$'+', %dil
+	je	.accumulatoken
+	cmpb	$'-', %dil
+	je	.accumulatoken
+	cmpb	$'<', %dil
+	je	.accumulatoken
+	cmpb	$'>', %dil
+	je	.accumulatoken
+	cmpb	$',', %dil
+	je	.accumulatoken
+	cmpb	$'.', %dil
+	je	.accumulatoken
+	cmpb	$'[', %dil
+	je	.open_token
+	cmpb	$']', %dil
+	je	.close_token
+	cmpb	$'\n', %dil
+	je	.handlenewline
+	jmp	.continue
+
+# Whenever a new line is found the procedure method is different
+# since we need to update the numberline, set the offset to zero
+# and go for the next character, it differs from '.continue'
+.handlenewline:
+	incq	-16(%rbp)
+	movq	$0, -24(%rbp)
+	incq	-8(%rbp)
+	jmp	.mainloop
+
+.accumulatoken:
+	cmpl	-24(%rbp), %edi
+	je	.incresefmlsz
+	CHECK_4_SPACE
+	GET_TOKEN_ADDR_2_SET__R8
 
 
+
+.open_token:
+.close_token:
+
+
+.pushtoken:
+	jmp	.continue
+
+.incresefmlsz:
+
+.continue:
+	incq	-20(%rbp)
 	incq	-8(%rbp)
 	jmp	.mainloop
 .c_fini:
 	EXIT	$0
 
+#  ________________________________
+# < error hamdling system (system) >
+#  --------------------------------
+#         \   ^__^
+#          \  (..)\_______
+#             (__)\       )\/\
+#                 ||----w |
+#                 ||     ||
+
+.ranoutoftokens:
+	PRINT	RANOUTTAT_MSG(%rip), RANOUTTAT_LEN(%rip), $2
+	# TODO: call printf from here
+	EXIT	$0
+
+
 .usage:
 	PRINT	USAGE_MSG(%rip), USAGE_LEN(%rip), $1
 	EXIT	$0
+
+#  ___________________
+# < helper functions! >
+#  -------------------
+#         \   ^__^
+#          \  (..)\_______
+#             (__)\       )\/\
+#                 ||----w |
+#                 ||     ||
+

@@ -1,0 +1,6 @@
+
+    1. Store single tokens
+    2. Handle accumulative tokens
+    3. Handle [ and ] tokens, make sure it is balanced
+    4. Implement fprintf
+
