@@ -1,20 +1,13 @@
-#                __
-#               / _)
-#      _.----._/ /      dc0x13
-#     /         /       part of `bf864` project.
-#  __/ (  | (  |        Mar 10 2025
-# /__.-'|_|--|_|
-
-.macro        PRINT_, a, b, c
-        movl        \a, %edi
-        movl        \b, %edx
-        leaq        \c, %rsi
-        movl        $1, %eax
-        syscall
+.macro	PRINT, msg, len, fd
+    movq    $1, %rax
+    movq    \fd, %rdi
+    leaq    \msg, %rsi
+    movq    \len, %rdx
+    syscall
 .endm
 
-.macro        EXIT_, a
-        movl        \a, %edi
-        movl        $60, %eax
-        syscall
+.macro	EXIT code
+	movq	\code, %rdi
+	movq	$60, %rax
+	syscall
 .endm

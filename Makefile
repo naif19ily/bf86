@@ -1,18 +1,13 @@
-#                __
-#               / _)
-#      _.----._/ /      dc0x13
-#     /         /       part of `bf864` project.
-#  __/ (  | (  |        Mar 10 2025
-# /__.-'|_|--|_|
+objs = main.o data.o
+flags =
+assb = as
+name = bfint
 
-objs = main.o error.o fprintf.o interpreter.o
-exec = bf
+all: $(name)
 
-all: $(exec)
-
-$(exec): $(objs)
-	ld	-o $(exec) $(objs)
+$(name): $(objs)
+	ld	-o $(name) $(objs)
 %.o: %.s
-	as	-o $@ $<
+	$(assb)	$< -o $@
 clean:
-	rm	-f $(objs) $(exec)
+	rm	-f $(objs) $(name)
