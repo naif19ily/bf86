@@ -25,5 +25,5 @@
     movq    %rax, %rbx
     leaq    MEMORY(%rip), %rax
     addq    %rbx, %rax
-    movq    (%rax), %r8
+    movq    %rax, %r8
 .endm

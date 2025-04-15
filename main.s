@@ -63,21 +63,28 @@ _start:
 	jmp	.mainloop
 
 .accumulatoken:
-	cmpl	-24(%rbp), %edi
+	cmpl	-36(%rbp), %edi
 	je	.incresefmlsz
 	CHECK_4_SPACE
 	GET_TOKEN_ADDR_2_SET__R8
-
-
+	# At this point the current token is stored into r8
+	# and the program is rady to set the token info
+	movq	-8(%rbp), %rax
+	movq	%rax, (%r8)
+	movq	-16(%rbp), %rax
+	movq	%rax, 8(%r8)
+	movq	-24(%rbp), %rax
+	movq	%rax, 16(%r8)
+	movl	$1, 24(%r8)
+	# Sets this character as the last token kind found
+	movl	%edi, -36(%rbp)
+	jmp	.continue
 
 .open_token:
 .close_token:
 
-
-.pushtoken:
-	jmp	.continue
-
 .incresefmlsz:
+	EXIT	$-1
 
 .continue:
 	incq	-20(%rbp)
