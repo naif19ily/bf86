@@ -37,8 +37,8 @@
         #             (__)\       )\/\
         #                 ||----w |
         #                 ||     ||
-	MEMORY_SIZE: .quad 30000
-	.globl MEMORY_SIZE
+	TOKEN_STREAM_SIZE: .quad 1024
+	.globl TOKEN_STREAM_SIZE
 
 	TOKEN_SIZE: .quad 28
 	.globl TOKEN_SIZE
@@ -56,10 +56,13 @@
         #   int  fmlysz;		4B
         #
         #				20B Total
-	MEMORY: .zero 30000 * 28
-	.globl MEMORY
+	TOKEN_STREAM: .zero 1024 * 28
+	.globl TOKEN_STREAM
 
         # Store pointers to the opening brackets ('[') in order
         # to make sure the program is well balanced.
         LPSTACK: .zero 256 * 8
         .globl LPSTACK
+
+	MEMORY: .zero	30000
+	.globl MEMORY

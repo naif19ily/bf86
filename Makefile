@@ -1,4 +1,4 @@
-objs = main.o data.o
+objs = main.o data.o interpreter.o
 flags =
 assb = as
 name = bfint
@@ -10,4 +10,5 @@ $(name): $(objs)
 %.o: %.s
 	$(assb)	$< -o $@
 clean:
-	rm	-f $(objs) $(name)
+	rm	-f $(objs) $(name) && clear
+

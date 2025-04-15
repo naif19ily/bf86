@@ -91,8 +91,7 @@ _start:
 	movq	%r8, (%rax)
 	incq	-44(%rbp)
 	incq	-32(%rbp)
-	movl	%edi, -36(%rbp)
-	# TODO: Make sure this works
+	movl	$'[', -36(%rbp)
 	jmp	.continue
 
 .close_token:
@@ -114,7 +113,7 @@ _start:
 	movl	%eax, 24(%r9)
 	decq	-44(%rbp)
 	incq	-32(%rbp)
-	movl	%edi, -36(%rbp)
+	movl	$']', -36(%rbp)
 	jmp	.continue
 
 .incresefmlsz:
@@ -125,10 +124,10 @@ _start:
 	incq	-8(%rbp)
 	jmp	.mainloop
 .c_fini:
-	GET_TOKEN_ADDR_2_UPD__R8
-	movl	24(%r8), %eax
-	cltq
-	EXIT	24(%r8)
+	cmpq	$0, -44(%rbp)
+	jne	.brksunbalanced
+	call	interpreter
+	EXIT	$0
 
 #  ________________________________
 # < error hamdling system (system) >
@@ -153,7 +152,6 @@ _start:
 	PRINT	UNBALANCED_MSG(%rip), UNBALANCED_LEN(%rip), $2
 	# TODO: call printf from here
 	EXIT	$0
-
 
 .usage:
 	PRINT	USAGE_MSG(%rip), USAGE_LEN(%rip), $1

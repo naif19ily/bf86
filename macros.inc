@@ -14,7 +14,7 @@
 
 .macro  CHECK_4_SPACE
     movq    -32(%rbp), %rax
-    cmpq    MEMORY_SIZE(%rip), %rax
+    cmpq    TOKEN_STREAM_SIZE(%rip), %rax
     je      .ranoutoftokens
 .endm
 
@@ -23,7 +23,7 @@
     movq    TOKEN_SIZE(%rip), %rbx
     mulq    %rbx
     movq    %rax, %rbx
-    leaq    MEMORY(%rip), %rax
+    leaq    TOKEN_STREAM(%rip), %rax
     addq    %rbx, %rax
     movq    %rax, %r8
 	movq	-8(%rbp), %rax
@@ -40,7 +40,7 @@
     movq    TOKEN_SIZE(%rip), %rbx
     mulq    %rbx
     movq    %rax, %rbx
-    leaq    MEMORY(%rip), %rax
+    leaq    TOKEN_STREAM(%rip), %rax
     addq    %rbx, %rax
     movq    %rax, %r8
 .endm
