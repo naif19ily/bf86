@@ -6,108 +6,107 @@
 
 interpreter:
 	leaq	TOKEN_STREAM(%rip), %r8
-	leaq	MEMORY(%rip), %r9
+	leaq	MEMORY(%rip), %r15
 .loop:
 	movq	(%r8), %rax
 	cmpq	$0, %rax
 	je	.c_fini
+	movzbl	(%rax), %edi
+	cmpb	$'+', %dil
+	je	.int_inc
+	cmpb	$'-', %dil
+	je	.int_dec
+	cmpb	$'<', %dil
+	je	.int_prv
+	cmpb	$'>', %dil
+	je	.int_nxt
+	cmpb	$'.', %dil
+	je	.int_out
+	cmpb	$',', %dil
+	je	.int_inp
+	cmpb	$'[', %dil
+	je	.loop_op
+	cmpb	$']', %dil
+	je	.loop_nd
+	jmp	.continue
+
+
+.int_inc:
 	xorq	%rcx, %rcx
-	movzbl	(%rax), %eax
-	cmpb	$'+', %al
-	je	.inst_inc
-	cmpb	$'-', %al
-	je	.inst_dec
-	cmpb	$'>', %al
-	je	.inst_nxt
-	cmpb	$'<', %al
-	je	.inst_prv
-	cmpb	$'.', %al
-	je	.inst_out
-	cmpb	$',', %al
-	je	.inst_inp
-	cmpb	$'[', %al
-	je	.inst_opn
-	cmpb	$']', %al
-	je	.inst_cls
-	jmp	.continue
-
-.inst_inc:
 	movl	24(%r8), %ecx
-	addb	%cl, (%r9)
+	addb	%cl, (%r15)
 	jmp	.continue
 
-.inst_dec:
+.int_dec:
+	xorq	%rcx, %rcx
 	movl	24(%r8), %ecx
-	subb	%cl, (%r9)
+	subb	%cl, (%r15)
 	jmp	.continue
 
-.inst_nxt:
+.int_prv:
+	xorq	%rax, %rax
 	movl	24(%r8), %eax
 	cltq
-	addq	%rax, %r9
+	subq	%rax, %r15
 	jmp	.continue
 
-.inst_prv:
+.int_nxt:
+	xorq	%rax, %rax
 	movl	24(%r8), %eax
 	cltq
-	subq	%rax, %r9
+	addq	%rax, %r15
 	jmp	.continue
 
-.inst_out:
-	movl	24(%r8), %eax
-	cmpl	$0, %eax
+.int_out:
+	cmpl	$0, 24(%r8)
 	je	.continue
 	movq	$1, %rax
 	movq	$1, %rdi
-	movq	%r9, %rsi
+	movq	%r15, %rsi
 	movq	$1, %rdx
 	syscall
 	decl	24(%r8)
-	jmp	.inst_out
+	jmp	.int_out
 
-.inst_inp:
-	movl	24(%r8), %eax
-	cmpl	$0, %eax
+.int_inp:
+	cmpl	$0, 24(%r8)
 	je	.continue
 	movq	$0, %rax
-	movq	$0, %rdi
-	movq	%r9, %rsi
+	movq	$1, %rdi
+	movq	%r15, %rsi
 	movq	$1, %rdx
 	syscall
 	decl	24(%r8)
-	jmp	.inst_out
+	jmp	.int_inp
 
-.inst_opn:
-	movzbl	(%r9), %eax
-	cmpb	$0, %al
+.loop_op:
+	cmpb	$0, (%r15)
 	jne	.continue
 	movl	24(%r8), %eax
 	cltq
 	movq	TOKEN_SIZE(%rip), %rbx
-	mulq	%rbx
-	movq	%rax, %rbx
-	leaq	TOKEN_STREAM(%rip), %rax
-	addq	%rbx, %rax
-	movq	%rax, %r8
-	jmp	.loop
+        mulq    %rbx
+        movq    %rax, %rbx
+        leaq    TOKEN_STREAM(%rip), %rax
+        addq    %rbx, %rax
+        movq    %rax, %r8
+        jmp     .continue
 
-.inst_cls:
-	movzbl	(%r9), %eax
-	cmpb	$0, %al
-	je	.continue
-	movl	24(%r8), %eax
-	cltq
-	movq	TOKEN_SIZE(%rip), %rbx
-	mulq	%rbx
-	movq	%rax, %rbx
-	leaq	TOKEN_STREAM(%rip), %rax
-	addq	%rbx, %rax
-	movq	%rax, %r8
-	jmp	.loop
+.loop_nd:
+        cmpb    $0, (%r15)
+        je      .continue
+        movl    24(%r8), %eax
+        cltq
+        movq    TOKEN_SIZE(%rip), %rbx
+        mulq    %rbx
+        movq    %rax, %rbx
+        leaq    TOKEN_STREAM(%rip), %rax
+        addq    %rbx, %rax
+        movq    %rax, %r8
+        jmp     .continue
 
 .continue:
-	movq	TOKEN_SIZE(%rip), %rax
-	addq	%rax, %r8
+	addq	TOKEN_SIZE(%rip), %r8
 	jmp	.loop
 
 .c_fini:
