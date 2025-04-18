@@ -1,4 +1,4 @@
-objs = main.o data.o interpreter.o fpx86.o
+objs = main.o data.o interpreter.o
 flags =
 assb = as
 name = bfint
