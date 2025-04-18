@@ -18,14 +18,12 @@ _start:
 	#
 	# -8(%rbp):  Source code..............
 	# -16(%rbp): Number line..............
-	# -24(%rbp): Offset line..............
 	# -32(%rbp): No tokens stored.........
 	# -36(%rbp): Last token type stored...
 	# -44(%rbp): No loops opened..........
 	#
 	movq	%r8, -8(%rbp)
 	movq	$1, -16(%rbp)
-	movq	$0, -24(%rbp)
 	movq	$0, -32(%rbp)
 	movl	$0, -36(%rbp)
 	movq	$0, -44(%rbp)
@@ -60,7 +58,6 @@ _start:
 # and go for the next character, it differs from '.continue'
 .handlenewline:
 	incq	-16(%rbp)
-	movq	$0, -24(%rbp)
 	incq	-8(%rbp)
 	jmp	.mainloop
 
@@ -120,12 +117,12 @@ _start:
 	GET_TOKEN_ADDR_2_UPD__R8
 	incl	24(%r8)
 .continue:
-	incq	-20(%rbp)
 	incq	-8(%rbp)
 	jmp	.mainloop
 .c_fini:
 	cmpq	$0, -44(%rbp)
 	jne	.brksunbalanced
+        movq    -32(%rbp), %rdi
 	call	interpreter
 	EXIT	$0
 

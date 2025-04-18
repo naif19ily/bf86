@@ -46,6 +46,25 @@
         LPSTACK_SIZE: .quad 256
         .globl LPSTACK_SIZE
 
+
+	inc: .string "inc\n"
+	dec: .string "dec\n"
+	prv: .string "prv\n"
+	nxt: .string "nxt\n"
+	out: .string "out\n"
+	inp: .string "inp\n"
+	lp1: .string "lp1\n"
+	lp2: .string "lp2\n"
+
+	.globl inc
+	.globl dec
+	.globl prv
+	.globl nxt
+	.globl out
+	.globl inp
+	.globl lp1
+	.globl lp2
+
 .section .bss
 
         # Token structure:
@@ -55,7 +74,7 @@
         #   int  offset;		8B
         #   int  fmlysz;		4B
         #
-        #				20B Total
+        #				28B Total
 	TOKEN_STREAM: .zero 1024 * 28
 	.globl TOKEN_STREAM
 

@@ -2,112 +2,139 @@
 
 .include "macros.inc"
 
+
+.macro PRINT_DEBUG_INFO
+        movl    24(%r14), %eax
+        cltq
+        pushq   %rax
+	movq	(%r14), %rax
+	movzbl	(%rax), %eax
+        cltq
+        pushq   %rax
+        leaq    .debugp(%rip), %rdi
+        movq    $1, %rsi
+        call    fpx86
+        popq   %rax
+        popq   %rax
+.endm
+
 .globl	interpreter
 
 interpreter:
-	leaq	TOKEN_STREAM(%rip), %r8
+        pushq   %rbp
+        movq    %rsp, %rbp
+        subq    $20, %rsp
+        movq    %rdi, -8(%rbp)
+        movq    $0, -16(%rbp)
+        movl    $0, -20(%rbp)
 	leaq	MEMORY(%rip), %r15
 .loop:
-	movq	(%r8), %rax
-	cmpq	$0, %rax
-	je	.c_fini
-	movzbl	(%rax), %edi
-	cmpb	$'+', %dil
-	je	.int_inc
-	cmpb	$'-', %dil
-	je	.int_dec
-	cmpb	$'<', %dil
-	je	.int_prv
-	cmpb	$'>', %dil
-	je	.int_nxt
-	cmpb	$'.', %dil
-	je	.int_out
-	cmpb	$',', %dil
-	je	.int_inp
-	cmpb	$'[', %dil
-	je	.loop_op
-	cmpb	$']', %dil
-	je	.loop_nd
-	jmp	.continue
-
-
-.int_inc:
-	xorq	%rcx, %rcx
-	movl	24(%r8), %ecx
-	addb	%cl, (%r15)
-	jmp	.continue
-
-.int_dec:
-	xorq	%rcx, %rcx
-	movl	24(%r8), %ecx
-	subb	%cl, (%r15)
-	jmp	.continue
-
-.int_prv:
-	xorq	%rax, %rax
-	movl	24(%r8), %eax
-	cltq
-	subq	%rax, %r15
-	jmp	.continue
-
-.int_nxt:
-	xorq	%rax, %rax
-	movl	24(%r8), %eax
-	cltq
-	addq	%rax, %r15
-	jmp	.continue
-
-.int_out:
-	cmpl	$0, 24(%r8)
-	je	.continue
-	movq	$1, %rax
-	movq	$1, %rdi
-	movq	%r15, %rsi
-	movq	$1, %rdx
-	syscall
-	decl	24(%r8)
-	jmp	.int_out
-
-.int_inp:
-	cmpl	$0, 24(%r8)
-	je	.continue
-	movq	$0, %rax
-	movq	$1, %rdi
-	movq	%r15, %rsi
-	movq	$1, %rdx
-	syscall
-	decl	24(%r8)
-	jmp	.int_inp
-
-.loop_op:
-	cmpb	$0, (%r15)
-	jne	.continue
-	movl	24(%r8), %eax
-	cltq
-	movq	TOKEN_SIZE(%rip), %rbx
-        mulq    %rbx
-        movq    %rax, %rbx
-        leaq    TOKEN_STREAM(%rip), %rax
-        addq    %rbx, %rax
-        movq    %rax, %r8
-        jmp     .continue
-
-.loop_nd:
-        cmpb    $0, (%r15)
-        je      .continue
-        movl    24(%r8), %eax
-        cltq
+        movq    -16(%rbp), %rax
+        cmpq    -8(%rbp), %rax
+        je      .c_fini
+        movq    -16(%rbp), %rax
         movq    TOKEN_SIZE(%rip), %rbx
         mulq    %rbx
-        movq    %rax, %rbx
-        leaq    TOKEN_STREAM(%rip), %rax
-        addq    %rbx, %rax
-        movq    %rax, %r8
-        jmp     .continue
+	leaq	TOKEN_STREAM(%rip), %r14
+        addq    %rax, %r14
+        movl    $0, -20(%rbp)
+	movq	(%r14), %rax
+	movzbl	(%rax), %eax
+	cmpb	$'+', %al
+	je	.perform_inc
+	cmpb	$'-', %al
+	je	.perform_dec
+	cmpb	$'>', %al
+	je	.perform_nxt
+	cmpb	$'<', %al
+	je	.perform_prv
+	cmpb	$'.', %al
+	je	.perform_out
+	cmpb	$',', %al
+	je	.perform_inp
+	cmpb	$'[', %al
+	je	.perform_loop_init
+	cmpb	$']', %al
+	je	.perform_loop_close
 
-.continue:
-	addq	TOKEN_SIZE(%rip), %r8
+	jmp	.nextoken
+
+.perform_inc:
+	movl	24(%r14), %ecx
+	addb	%cl, (%r15)
+	jmp	.nextoken
+
+.perform_dec:
+	movl	24(%r14), %ecx
+	subb	%cl, (%r15)
+	jmp	.nextoken
+
+.perform_nxt:
+	xorq	%rax, %rax
+	movl	24(%r14), %eax
+	cltq
+	addq	%rax, %r15
+	jmp	.nextoken
+
+.perform_prv:
+	xorq	%rax, %rax
+	movl	24(%r14), %eax
+	cltq
+	subq	%rax, %r15
+	jmp	.nextoken
+
+.perform_out:
+        movl    -20(%rbp), %eax
+        movl    24(%r14), %ebx
+        cmpl    %ebx, %eax
+        je      .nextoken
+        movq    $1, %rax
+        movq    $1, %rdi
+        movq    %r15, %rsi
+        movq    $1, %rdx
+        syscall
+        incl    -20(%rbp)
+        jmp     .perform_out
+
+.perform_inp:
+        movl    -20(%rbp), %eax
+        movl    24(%r14), %ebx
+        cmpl    %ebx, %eax
+        je      .nextoken
+        movq    $0, %rax
+        movq    $1, %rdi
+        movq    %r15, %rsi
+        movq    $1, %rdx
+        syscall
+        incl    -20(%rbp)
+        jmp     .perform_out
+
+.perform_loop_init:
+	xorq	%rcx, %rcx
+	movb	(%r15), %cl
+	cmpb	$0, %cl
+	jne	.nextoken
+	xorq	%rax, %rax
+	movl	24(%r14), %eax
+	cltq
+        movq    %rax, -16(%rbp)
+	jmp	.nextoken
+
+.perform_loop_close:
+	xorq	%rcx, %rcx
+	movb	(%r15), %cl
+	cmpb	$0, %cl
+	je	.nextoken
+	xorq	%rax, %rax
+	movl	24(%r14), %eax
+	cltq
+        movq    %rax, -16(%rbp)
+	jmp	.nextoken
+
+.nextoken:
+        incq    -16(%rbp)
 	jmp	.loop
 
 .c_fini:
+        leave
 	ret
