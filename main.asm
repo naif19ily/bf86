@@ -137,29 +137,16 @@ _start:
 
 .ranoutoftokens:
 	PRINT	RANOUTTAT_MSG(%rip), RANOUTTAT_LEN(%rip), $2
-	# TODO: call printf from here
 	EXIT	$1
 
 .maxnestedloops:
 	PRINT	MAXNESTEDLPS_MSG(%rip), MAXNESTEDLPS_LEN(%rip), $2
-	# TODO: call printf from here
 	EXIT	$0
 
 .brksunbalanced:
 	PRINT	UNBALANCED_MSG(%rip), UNBALANCED_LEN(%rip), $2
-	# TODO: call printf from here
 	EXIT	$0
 
 .usage:
 	PRINT	USAGE_MSG(%rip), USAGE_LEN(%rip), $1
 	EXIT	$0
-
-#  ___________________
-# < helper functions! >
-#  -------------------
-#         \   ^__^
-#          \  (..)\_______
-#             (__)\       )\/\
-#                 ||----w |
-#                 ||     ||
-
