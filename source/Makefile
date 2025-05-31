@@ -6,7 +6,7 @@
 objs = main.o data.o interpreter.o
 flags =
 assb = as
-name = bfint
+name = bf86
 
 all: $(name)
 
