@@ -1,0 +1,8 @@
+     _   ___ ___ ___
+    | |_|  _| . |  _|
+    | . |  _| . | . |
+    |___|_| |___|___|
+
+    Simple brainfuck interpreter; this shit goes really fast
+    ./bf86 "$(cat <filename>)"
+
